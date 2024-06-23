@@ -3,11 +3,14 @@ package galysso.codicraft.psxpa.experience.sources;
 import galysso.codicraft.psxpa.CodiCraft_PuffishSkillsXPAddon;
 
 import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.puffish.skillsmod.SkillsMod;
 import net.puffish.skillsmod.api.SkillsAPI;
@@ -26,6 +29,8 @@ import net.puffish.skillsmod.api.calculation.prototype.Prototype;
 
 
 import net.minecraftforge.common.Tags;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
@@ -62,7 +67,16 @@ public class BrewingExperienceSource implements ExperienceSource {
     }
 
     public int getValue(final ServerPlayer player, NonNullList<ItemStack> createdPotions) {
-        return 1000;
+        int xpValue = 0;
+        for (ItemStack potion : createdPotions) {
+            if (!potion.isEmpty()) {
+                CompoundTag tag = createdPotions.get(0).getTag();
+                if (tag.contains("xpFactor") && tag.getInt("xpFactor") > 0) {
+                    xpValue += tag.getInt("xpFactor") * potion.getCount();
+                }
+            }
+        }
+        return xpValue;
     }
 
     private record Data(ServerPlayer player, LivingEntity entity, ItemStack weapon, DamageSource damageSource, double entityDroppedXp) { }
